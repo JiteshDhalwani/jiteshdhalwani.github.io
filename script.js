@@ -507,17 +507,20 @@ function initNavObserver() {
     if ('IntersectionObserver' in window) {
         // Middle band: top 35% + bottom 55% are margins, ~10% band decides.
         // Works on 360px phones and 1440px desktops without pixel magic.
+        // NOTE: entries only contains *changed* sections, so we must persist
+        // visibility per section. Deriving state from entries alone uses stale
+        // data (e.g. projects still in band but absent from entries) and flips
+        // to the wrong link at the boundary, widening the window where a
+        // sticky touch :hover made both links look active.
+        const bandVisible = { overview: false, projects: false };
         const navObserver = new IntersectionObserver((entries) => {
-            let overviewVisible = false;
-            let projectsVisible = false;
             for (const entry of entries) {
-                if (!entry.isIntersecting) continue;
-                if (entry.target.id === 'overview') overviewVisible = true;
-                if (entry.target.id === 'projects') projectsVisible = true;
+                if (entry.target.id === 'overview') bandVisible.overview = entry.isIntersecting;
+                if (entry.target.id === 'projects') bandVisible.projects = entry.isIntersecting;
             }
             // Projects wins ties (it's lower on the page = further progress)
-            if (projectsVisible) setActiveNav('projects');
-            else if (overviewVisible) setActiveNav('overview');
+            if (bandVisible.projects) setActiveNav('projects');
+            else if (bandVisible.overview) setActiveNav('overview');
             // If neither intersects (mid-transition), keep last state — no flicker
         }, { rootMargin: '-35% 0px -55% 0px', threshold: 0 });
 

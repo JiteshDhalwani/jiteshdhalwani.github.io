@@ -85,8 +85,12 @@
         .nav-link.nav-inactive {
             color: #8C8A82;
         }
-        .nav-link:hover {
-            color: #FAF9F5;
+        /* Hover only on devices with a real hover pointer — prevents sticky
+           :hover on touch phones from making an inactive link look active */
+        @media (hover: hover) and (pointer: fine) {
+            .nav-link:hover {
+                color: #FAF9F5;
+            }
         }
         /* Visible keyboard focus everywhere */
         a:focus-visible,
